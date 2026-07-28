@@ -1,0 +1,28 @@
+h3{
+    background-color: chartreuse;
+    background-size: cover;
+    width: 115px;
+    border-radius: 5px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 5);
+}
+button{
+    background-color: chartreuse;
+    background-size: cover;
+    width: 100px;
+    height: 60px;
+    border-radius: 4px;
+    font-size:larger;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 5);
+    transition: all 0.3s ease;
+    align-items: center;
+    display: block;
+}
+button:hover{
+    transform: scale(1.1);
+}
+body{
+    background-image: url("img/Standard_of_Cyrus_the_Great.svg");
+    
+}

@@ -1,0 +1,42 @@
+body{
+    background-image: url("img/4449457.jpg");
+}
+h1{
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    text-align: center;
+
+}
+div{
+    background-image: url("img/InShot_20251220_221806537[1].jpg");
+    margin: 0 auto;
+    justify-content: center;
+    width: 200px;
+    height: 200px;
+    background-size: cover;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 5);
+    transition: all 0.3s ease;
+}
+div:hover{
+    transform: scale(1.1);
+} 
+input{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background-color: rgb(29, 197, 37);
+    border-radius: 10px;
+    text-align: center;
+}
+button{
+    background-color: greenyellow;
+    box-shadow: 0 4px 10px rgba(0, 4, 0, 5) ;
+    transition: all 0.3s ease;
+}
+button:hover{
+    transform: scale(1.1);
+}
+video{
+    border-radius: 10px;
+    margin: 100px auto;
+    display: block;
+}
