@@ -1,5 +1,5 @@
 body{
-    background-image: url("img/4449457.jpg");
+    background-image: url("4449457.jpg");
 }
 h1{
     font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
@@ -7,7 +7,7 @@ h1{
 
 }
 div{
-    background-image: url("img/InShot_20251220_221806537[1].jpg");
+    background-image: url("InShot_20251220_221806537[1].jpg");
     margin: 0 auto;
     justify-content: center;
     width: 200px;
