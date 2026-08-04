@@ -1,0 +1,42 @@
+div {
+    background-image: url("images/alpha.logo.jpg");
+    width: 200px;
+    height: 200px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin: 0 auto;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgb(214, 236, 16);
+    transition: 0.3s ease;
+}
+
+div:hover {
+    transform: scale(1.1);
+}
+
+h1 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+}
+
+input {
+    background-color: rgb(243, 243, 4);
+    border-radius: 5px;
+}
+
+input::placeholder {
+    font-weight: 800;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: rgb(75, 74, 74);
+}
+
+button {
+    background-color: rgb(214, 236, 16);
+    border-radius: 5px;
+}
+
+
