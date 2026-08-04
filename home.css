@@ -1,0 +1,38 @@
+div {
+    background-color: rgb(252, 252, 2);
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    text-align: center;
+    transition: 0.3s ease;
+}
+
+div:hover {
+    transform: scale(1.1);
+}
+
+h4 {
+    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+}
+
+button {
+    background-color: rgb(102, 102, 192);
+    margin: -60px auto;
+    border-radius: 10px;
+    text-align: center;
+}
+
+img {
+    width: 300px;
+    height: 250px;
+    margin: 0 auto;
+    border-radius: 10px;
+}
+
+body {
+    background-color: rgb(73, 72, 72);
+}
