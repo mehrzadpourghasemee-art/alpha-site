@@ -1,28 +1,38 @@
-h3{
-    background-color: chartreuse;
-    background-size: cover;
-    width: 115px;
-    border-radius: 5px;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 5);
+div {
+    background-color: rgb(252, 252, 2);
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    text-align: center;
+    transition: 0.3s ease;
 }
-button{
-    background-color: chartreuse;
-    background-size: cover;
-    width: 100px;
-    height: 60px;
-    border-radius: 4px;
-    font-size:larger;
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 5);
-    transition: all 0.3s ease;
-    align-items: center;
-    display: block;
-}
-button:hover{
+
+div:hover {
     transform: scale(1.1);
 }
-body{
-    background-image: url("img/Standard_of_Cyrus_the_Great.svg");
-    
+
+h4 {
+    margin: 0 auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+}
+
+button {
+    background-color: rgb(102, 102, 192);
+    margin: -60px auto;
+    border-radius: 10px;
+    text-align: center;
+}
+
+img {
+    width: 300px;
+    height: 250px;
+    margin: 0 auto;
+    border-radius: 10px;
+}
+
+body {
+    background-color: rgb(73, 72, 72);
 }
