@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Shadow Rush</title>
+
+<style>
+*{
+ box-sizing:border-box;
+ user-select:none;
+ -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+ margin:0;
+ width:100%;
+ height:100%;
+ overflow:hidden;
+ background:#050816;
+ color:white;
+ font-family:Tahoma,Arial;
+ touch-action:none;
+}
+
+canvas{
+ position:fixed;
+ inset:0;
+ width:100%;
+ height:100%;
+}
+
+#hud{
+ position:fixed;
+ top:8px;
+ left:8px;
+ right:8px;
+ z-index:10;
+ display:flex;
+ justify-content:space-between;
+ gap:5px;
+}
+
+.stat{
+ background:#111827e8;
+ padding:7px 9px;
+ border-radius:10px;
+ font-size:12px;
+}
+
+.stat b{
+ font-size:14px;
+}
+
+#hpBar,
+#bossBar{
+ position:fixed;
+ z-index:10;
+ height:9px;
+ background:#263247;
+ border-radius:10px;
+ overflow:hidden;
+}
+
+#hpBar{
+ top:48px;
+ left:8px;
+ width:160px;
+}
+
+#bossBar{
+ display:none;
+ top:62px;
+ left:15%;
+ right:15%;
+}
+
+#hpFill{
+ width:100%;
+ height:100%;
+ background:#22c55e;
+}
+
+#bossFill{
+ width:100%;
+ height:100%;
+ background:#ef4444;
+}
+
+.screen{
+ position:fixed;
+ inset:0;
+ z-index:30;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ background:#02050be8;
+}
+
+.hidden{
+ display:none!important;
+}
+
+.panel{
+ width:min(430px,92%);
+ padding:24px;
+ border-radius:22px;
+ background:#111827;
+ text-align:center;
+}
+
+h1{
+ font-size:34px;
+ margin:0 0 10px;
+}
+
+.btn{
+ width:100%;
+ padding:14px;
+ margin-top:10px;
+ border:0;
+ border-radius:13px;
+ background:#4f46e5;
+ color:white;
+ font-size:16px;
+ font-weight:bold;
+}
+
+.gray{
+ background:#334155;
+}
+
+#joy{
+ position:fixed;
+ left:20px;
+ bottom:20px;
+ width:125px;
+ height:125px;
+ border-radius:50%;
+ background:#ffffff0b;
+ border:2px solid #ffffff20;
+ z-index:20;
+}
+
+#stick{
+ position:absolute;
+ left:33px;
+ top:33px;
+ width:55px;
+ height:55px;
+ border-radius:50%;
+ background:#64748acc;
+}
+
+.ctrl{
+ position:fixed;
+ z-index:20;
+ border:0;
+ border-radius:50%;
+ color:white;
+ font-size:23px;
+ font-weight:bold;
+}
+
+#attack{
+ right:105px;
+ bottom:28px;
+ width:68px;
+ height:68px;
+ background:#dc2626;
+}
+
+#dash{
+ right:20px;
+ bottom:20px;
+ width:76px;
+ height:76px;
+ background:#7c3aed;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+
+ <div class="stat">
+ ❤️ <b id="hp">100</b>
+ </div>
+
+ <div class="stat">
+ 🪙 <b id="coins">0</b>
+ </div>
+
+ <div class="stat">
+ ☠️ <b id="kills">0</b>
+ </div>
+
+ <div class="stat">
+ 🎯 <b id="level">1</b>
+ </div>
+
+</div>
+
+<div id="hpBar">
+ <div id="hpFill"></div>
+</div>
+
+<div id="bossBar">
+ <div id="bossFill"></div>
+</div>
+
+
+<div id="menu" class="screen">
+
+ <div class="panel">
+
+  <h1>⚔️ SHADOW RUSH</h1>
+
+  <p>
+   بازی اکشن سخت با باس،
+   فروشگاه و کدهای مخفی
+  </p>
+
+  <button
+   id="start"
+   class="btn">
+   🎮 شروع بازی
+  </button>
+
+  <button
+   id="shopOpen"
+   class="btn gray">
+   🛒 فروشگاه
+  </button>
+
+ </div>
+
+</div>
+
+
+<div id="shop" class="screen hidden">
+
+ <div class="panel">
+
+  <h2>🛒 فروشگاه</h2>
+
+  <p>
+   سکه:
+   <b id="shopCoins">0</b>
+  </p>
+
+  <button class="btn" onclick="buyDamage()">
+   💥 قدرت +20% — 30 🪙
+  </button>
+
+  <button class="btn" onclick="buySpeed()">
+   🏃 سرعت +15% — 35 🪙
+  </button>
+
+  <button class="btn" onclick="buyHP()">
+   ❤️ جان +25 — 40 🪙
+  </button>
+
+  <button class="btn" onclick="buyFire()">
+   🔥 سرعت شلیک — 50 🪙
+  </button>
+
+  <button class="btn" onclick="buyDash()">
+   ⚡ داش سریع — 45 🪙
+  </button>
+
+  <input
+   id="secret"
+   placeholder="کد مخفی"
+   style="
+   width:100%;
+   margin-top:10px;
+   padding:13px;
+   border-radius:10px;
+   border:1px solid #334155;
+   background:#0f172a;
+   color:white;
+   text-align:center;
+   font-size:16px;
+   ">
+
+  <button
+   id="code"
+   class="btn">
+   🔐 فعال کردن کد
+  </button>
+
+  <p id="result"></p>
+
+  <button
+   id="shopClose"
+   class="btn gray">
+   بازگشت
+  </button>
+
+ </div>
+
+</div>
+
+
+<div id="joy">
+ <div id="stick"></div>
+</div>
+
+<button
+ id="attack"
+ class="ctrl">
+ ⚔️
+</button>
+
+<button
+ id="dash"
+ class="ctrl">
+ ⚡
+</button>
+
+<script>
+  const canvas =
+document.getElementById("game");
+
+const ctx =
+canvas.getContext("2d");
+
+let W,H;
+
+function resize(){
+
+ W=innerWidth;
+ H=innerHeight;
+
+ canvas.width=W;
+ canvas.height=H;
+
+}
+
+resize();
+
+addEventListener(
+ "resize",
+ resize
+);
+
+
+const player={
+
+ x:W/2,
+ y:H/2,
+
+ r:18,
+
+ hp:100,
+ maxHp:100,
+
+ speed:4,
+
+ damage:25,
+
+ fireDelay:250,
+
+ lastShot:0,
+
+ dashCooldown:1000,
+
+ lastDash:0
+
+};
+
+
+let game=false;
+
+let level=1;
+
+let coins=0;
+
+let kills=0;
+
+let enemies=[];
+
+let bullets=[];
+
+let boss=null;
+
+let spawnLeft=0;
+
+let spawnTimer=0;
+
+
+let joyX=0;
+let joyY=0;
+
+let keys={};
+
+
+/* شروع */
+
+document
+.getElementById("start")
+.onclick=function(){
+
+ document
+ .getElementById("menu")
+ .classList.add("hidden");
+
+ game=true;
+
+ startLevel();
+
+};
+
+
+/* مرحله */
+
+function startLevel(){
+
+ enemies=[];
+
+ bullets=[];
+
+ boss=null;
+
+ spawnLeft=
+ 5+level*2;
+
+ spawnTimer=0;
+
+ document
+ .getElementById("bossBar")
+ .style.display="none";
+
+ player.hp=
+ player.maxHp;
+
+}
+
+
+/* دشمن */
+
+function spawnEnemy(){
+
+ let side=
+ Math.floor(
+  Math.random()*4
+ );
+
+ let x,y;
+
+ if(side===0){
+
+  x=-30;
+  y=Math.random()*H;
+
+ }
+
+ else if(side===1){
+
+  x=W+30;
+  y=Math.random()*H;
+
+ }
+
+ else if(side===2){
+
+  x=Math.random()*W;
+  y=-30;
+
+ }
+
+ else{
+
+  x=Math.random()*W;
+  y=H+30;
+
+ }
+
+
+ let hp=
+ 30+level*7;
+
+ enemies.push({
+
+  x:x,
+  y:y,
+
+  r:15,
+
+  hp:hp,
+  maxHp:hp,
+
+  speed:
+  1+level*.06
+
+ });
+
+}
+
+
+/* تیر */
+
+function shoot(){
+
+ if(!game)return;
+
+ let now=Date.now();
+
+ if(
+  now-player.lastShot<
+  player.fireDelay
+ )return;
+
+ player.lastShot=now;
+
+ let target=null;
+
+ let best=Infinity;
+
+
+ for(let e of enemies){
+
+  let d=
+   Math.hypot(
+    e.x-player.x,
+    e.y-player.y
+   );
+
+  if(d<best){
+
+   best=d;
+   target=e;
+
+  }
+
+ }
+
+
+ if(boss){
+
+  let d=
+   Math.hypot(
+    boss.x-player.x,
+    boss.y-player.y
+   );
+
+  if(d<best){
+
+   target=boss;
+
+  }
+
+ }
+
+
+ if(!target)return;
+
+
+ let dx=
+  target.x-player.x;
+
+ let dy=
+  target.y-player.y;
+
+ let len=
+  Math.hypot(dx,dy)||1;
+
+
+ bullets.push({
+
+  x:player.x,
+  y:player.y,
+
+  vx:dx/len*9,
+  vy:dy/len*9
+
+ });
+
+}
+
+
+/* داش */
+
+function dash(){
+
+ let now=Date.now();
+
+ if(
+  now-player.lastDash<
+  player.dashCooldown
+ )return;
+
+ let x=joyX;
+ let y=joyY;
+
+ if(!x&&!y){
+
+  x=1;
+  y=0;
+
+ }
+
+ let len=
+  Math.hypot(x,y)||1;
+
+ player.x+=x/len*120;
+ player.y+=y/len*120;
+
+ player.x=
+  Math.max(
+   20,
+   Math.min(W-20,player.x)
+  );
+
+ player.y=
+  Math.max(
+   80,
+   Math.min(H-20,player.y)
+  );
+
+ player.lastDash=now;
+
+}
+  /* باس */
+
+function createBoss(){
+
+ let hp=
+ 400+level*100;
+
+ boss={
+
+  x:W/2,
+  y:100,
+
+  r:45,
+
+  hp:hp,
+  maxHp:hp,
+
+  type:
+   Math.floor(
+    Math.random()*5
+   ),
+
+  timer:0
+
+ };
+
+ document
+ .getElementById("bossBar")
+ .style.display="block";
+
+}
+
+
+/* خرید */
+
+function buyDamage(){
+
+ if(coins>=30){
+
+  coins-=30;
+
+  player.damage*=1.2;
+
+ }
+
+ updateUI();
+
+}
+
+
+function buySpeed(){
+
+ if(coins>=35){
+
+  coins-=35;
+
+  player.speed*=1.15;
+
+ }
+
+ updateUI();
+
+}
+
+
+function buyHP(){
+
+ if(coins>=40){
+
+  coins-=40;
+
+  player.maxHp+=25;
+
+  player.hp=
+   player.maxHp;
+
+ }
+
+ updateUI();
+
+}
+
+
+function buyFire(){
+
+ if(coins>=50){
+
+  coins-=50;
+
+  player.fireDelay*=.85;
+
+ }
+
+ updateUI();
+
+}
+
+
+function buyDash(){
+
+ if(coins>=45){
+
+  coins-=45;
+
+  player.dashCooldown*=.8;
+
+ }
+
+ updateUI();
+
+}
+
+
+/* کد مخفی */
+
+document
+.getElementById("code")
+.onclick=function(){
+
+ let code=
+ document
+ .getElementById("secret")
+ .value
+ .trim()
+ .toUpperCase();
+
+ let result=
+ document
+ .getElementById("result");
+
+
+ if(code==="ALPHA1000"){
+
+  coins+=1000;
+
+  result.textContent=
+   "🔥 +1000 سکه";
+
+ }
+
+ else if(code==="SHADOW500"){
+
+  coins+=500;
+
+  result.textContent=
+   "🌑 +500 سکه";
+
+ }
+
+ else if(code==="BOSSKEY"){
+
+  coins+=750;
+
+  result.textContent=
+   "👑 +750 سکه";
+
+ }
+
+ else if(code==="GODMODE"){
+
+  player.maxHp=9999;
+
+  player.hp=9999;
+
+  player.damage=250;
+
+  result.textContent=
+   "👑 GODMODE فعال شد";
+
+ }
+
+ else{
+
+  result.textContent=
+   "❌ کد اشتباه";
+
+ }
+
+ updateUI();
+
+};
+
+
+/* فروشگاه */
+
+document
+.getElementById("shopOpen")
+.onclick=function(){
+
+ game=false;
+
+ document
+ .getElementById("menu")
+ .classList.add("hidden");
+
+ document
+ .getElementById("shop")
+ .classList.remove("hidden");
+
+ updateUI();
+
+};
+
+
+document
+.getElementById("shopClose")
+.onclick=function(){
+
+ document
+ .getElementById("shop")
+ .classList.add("hidden");
+
+ document
+ .getElementById("menu")
+ .classList.remove("hidden");
+
+};
+
+
+/* دکمه ها */
+
+document
+.getElementById("attack")
+.addEventListener(
+ "pointerdown",
+ shoot
+);
+
+
+document
+.getElementById("dash")
+.addEventListener(
+ "pointerdown",
+ dash
+);
+
+
+/* کیبورد */
+
+addEventListener(
+ "keydown",
+ e=>{
+
+  keys[
+   e.key.toLowerCase()
+  ]=true;
+
+  if(e.key===" ")
+   shoot();
+
+  if(e.key==="Shift")
+   dash();
+
+ }
+);
+
+
+addEventListener(
+ "keyup",
+ e=>{
+
+  keys[
+   e.key.toLowerCase()
+  ]=false;
+
+ });
+
+
+/* جوی‌استیک */
+
+const joy=
+document.getElementById("joy");
+
+const stick=
+document.getElementById("stick");
+
+let active=false;
+
+
+function moveJoy(e){
+
+ let r=
+  joy.getBoundingClientRect();
+
+ let x=
+  e.clientX-
+  (r.left+r.width/2);
+
+ let y=
+  e.clientY-
+  (r.top+r.height/2);
+
+ let max=43;
+
+ let len=
+  Math.hypot(x,y)||1;
+
+ if(len>max){
+
+  x=x/len*max;
+  y=y/len*max;
+
+ }
+
+ joyX=x/max;
+ joyY=y/max;
+
+ stick.style.transform=
+  `translate(${x}px,${y}px)`;
+
+}
+
+
+joy.addEventListener(
+ "pointerdown",
+ e=>{
+
+  active=true;
+
+  joy.setPointerCapture(
+   e.pointerId
+  );
+
+  moveJoy(e);
+
+ }
+);
+
+
+joy.addEventListener(
+ "pointermove",
+ e=>{
+
+  if(active)
+   moveJoy(e);
+
+ }
+);
+
+
+function stopJoy(){
+
+ active=false;
+
+ joyX=0;
+ joyY=0;
+
+ stick.style.transform=
+  "translate(0,0)";
+
+}
+
+
+joy.addEventListener(
+ "pointerup",
+ stopJoy
+);
+
+joy.addEventListener(
+ "pointercancel",
+ stopJoy
+);
+
+  function update(){
+
+ if(!game)return;
+
+
+ let dx=joyX;
+ let dy=joyY;
+
+
+ if(keys.w)dy--;
+
+ if(keys.s)dy++;
+
+ if(keys.a)dx--;
+
+ if(keys.d)dx++;
+
+
+ let len=
+  Math.hypot(dx,dy)||1;
+
+
+ if(dx||dy){
+
+  dx/=len;
+  dy/=len;
+
+ }
+
+
+ player.x+=
+  dx*player.speed;
+
+ player.y+=
+  dy*player.speed;
+
+
+ player.x=
+  Math.max(
+   20,
+   Math.min(W-20,player.x)
+  );
+
+ player.y=
+  Math.max(
+   80,
+   Math.min(H-20,player.y)
+  );
+
+
+ /* تولید دشمن */
+
+ if(spawnLeft>0){
+
+  spawnTimer--;
+
+  if(spawnTimer<=0){
+
+   spawnTimer=35;
+
+   spawnEnemy();
+
+   spawnLeft--;
+
+  }
+
+ }
+
+
+ /* پایان مرحله */
+
+ if(
+  spawnLeft===0 &&
+  enemies.length===0 &&
+  !boss
+ ){
+
+  if(level%10===0){
+
+   createBoss();
+
+  }
+
+  else{
+
+   level++;
+
+   startLevel();
+
+  }
+
+ }
+
+
+ /* حرکت دشمن */
+
+ for(let e of enemies){
+
+  let dx=
+   player.x-e.x;
+
+  let dy=
+   player.y-e.y;
+
+  let len=
+   Math.hypot(dx,dy)||1;
+
+  e.x+=
+   dx/len*e.speed;
+
+  e.y+=
+   dy/len*e.speed;
+
+
+  if(
+   len<
+   e.r+player.r
+  ){
+
+   player.hp-=.6;
+
+  }
+
+ }
+
+
+ /* باس */
+
+ if(boss){
+
+  let dx=
+   player.x-boss.x;
+
+  let dy=
+   player.y-boss.y;
+
+  let len=
+   Math.hypot(dx,dy)||1;
+
+  boss.x+=
+   dx/len*1.2;
+
+  boss.y+=
+   dy/len*1.2;
+
+
+  boss.timer--;
+
+  if(boss.timer<=0){
+
+   boss.timer=100;
+
+   player.hp-=
+    8+boss.type*3;
+
+  }
+
+ }
+
+
+ /* تیرها */
+
+ for(
+  let i=bullets.length-1;
+  i>=0;
+  i--
+ ){
+
+  let b=bullets[i];
+
+  b.x+=b.vx;
+  b.y+=b.vy;
+
+  let hit=false;
+
+
+  for(
+   let j=enemies.length-1;
+   j>=0;
+   j--
+  ){
+
+   let e=enemies[j];
+
+   if(
+    Math.hypot(
+     b.x-e.x,
+     b.y-e.y
+    )<e.r+5
+   ){
+
+    e.hp-=player.damage;
+
+    hit=true;
+
+    if(e.hp<=0){
+
+     coins+=5;
+     kills++;
+
+     enemies.splice(j,1);
+
+    }
+
+    break;
+
+   }
+
+  }
+
+
+  if(
+   boss &&
+   Math.hypot(
+    b.x-boss.x,
+    b.y-boss.y
+   )<
+   boss.r+5
+  ){
+
+   boss.hp-=player.damage;
+
+   hit=true;
+
+
+   if(boss.hp<=0){
+
+    coins+=
+     100+level*20;
+
+    boss=null;
+
+    level++;
+
+    startLevel();
+
+   }
+
+  }
+
+
+  if(
+   hit||
+   b.x<0||
+   b.x>W||
+   b.y<0||
+   b.y>H
+  ){
+
+   bullets.splice(i,1);
+
+  }
+
+ }
+
+
+ if(player.hp<=0){
+
+  game=false;
+
+  alert(
+   "💀 باختی!\n"+
+   "مرحله: "+level+
+   "\nسکه: "+coins
+  );
+
+  document
+   .getElementById("menu")
+   .classList.remove("hidden");
+
+ }
+
+
+ updateUI();
+
+}
+
+
+function updateUI(){
+
+ document
+ .getElementById("hp")
+ .textContent=
+  Math.max(
+   0,
+   Math.ceil(player.hp)
+  );
+
+ document
+ .getElementById("coins")
+ .textContent=
+  coins;
+
+ document
+ .getElementById("shopCoins")
+ .textContent=
+  coins;
+
+ document
+ .getElementById("kills")
+ .textContent=
+  kills;
+
+ document
+ .getElementById("level")
+ .textContent=
+  level;
+
+ document
+ .getElementById("hpFill")
+ .style.width=
+  Math.max(
+   0,
+   player.hp/player.maxHp*100
+  )+"%";
+
+
+ if(boss){
+
+  document
+   .getElementById("bossFill")
+   .style.width=
+    Math.max(
+     0,
+     boss.hp/boss.maxHp*100
+    )+"%";
+
+ }
+
+}
+
+
+function draw(){
+
+ ctx.clearRect(
+  0,0,W,H
+ );
+
+
+ /* زمین */
+
+ ctx.strokeStyle=
+  "#ffffff08";
+
+ for(
+  let x=0;
+  x<W;
+  x+=50
+ ){
+
+  ctx.beginPath();
+
+  ctx.moveTo(x,60);
+  ctx.lineTo(x,H);
+
+  ctx.stroke();
+
+ }
+
+
+ for(
+  let y=60;
+  y<H;
+  y+=50
+ ){
+
+  ctx.beginPath();
+
+  ctx.moveTo(0,y);
+  ctx.lineTo(W,y);
+
+  ctx.stroke();
+
+ }
+
+
+ /* تیر */
+
+ ctx.fillStyle="#facc15";
+
+ for(let b of bullets){
+
+  ctx.beginPath();
+
+  ctx.arc(
+   b.x,
+   b.y,
+   5,
+   0,
+   Math.PI*2
+  );
+
+  ctx.fill();
+
+ }
+
+
+ /* دشمن */
+
+ for(let e of enemies){
+
+  ctx.fillStyle=
+   "#a855f7";
+
+  ctx.beginPath();
+
+  ctx.arc(
+   e.x,
+   e.y,
+   e.r,
+   0,
+   Math.PI*2
+  );
+
+  ctx.fill();
+
+ }
+
+
+ /* باس */
+
+ if(boss){
+
+  ctx.fillStyle=
+   "#ef4444";
+
+  ctx.beginPath();
+
+  ctx.arc(
+   boss.x,
+   boss.y,
+   boss.r,
+   0,
+   Math.PI*2
+  );
+
+  ctx.fill();
+
+ }
+
+
+ /* بازیکن */
+
+ ctx.fillStyle=
+  "#38bdf8";
+
+ ctx.beginPath();
+
+ ctx.arc(
+  player.x,
+  player.y,
+  player.r,
+  0,
+  Math.PI*2
+ );
+
+ ctx.fill();
+
+}
+
+
+function loop(){
+
+ update();
+
+ draw();
+
+ requestAnimationFrame(
+  loop
+ );
+
+}
+
+loop();
+
+</script>
+
+</body>
+</html>
