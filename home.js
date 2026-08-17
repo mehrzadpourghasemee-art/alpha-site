@@ -10,5 +10,5 @@ document.getElementById("chatbtn").onclick = function() {
 
 const game = 
 document.getElementById("gamebtn").onclick = function() {
-    window.location.href = "alpha_game.html"
+    window.location.href = "zuba_shooter_enemies.html"
 }
