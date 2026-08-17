@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Zuba Shooter Online</title>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#243127;font-family:Arial,sans-serif;touch-action:none}
+#game{position:fixed;inset:0;overflow:hidden;background:#38583e}
+#world{position:absolute;left:0;top:0;width:2000px;height:1400px;background:
+linear-gradient(rgba(255,255,255,.04) 2px,transparent 2px),
+linear-gradient(90deg,rgba(255,255,255,.04) 2px,transparent 2px),#38583e;background-size:60px 60px;will-change:transform}
+.wall{position:absolute;background:#28362c;border:5px solid #172019;border-radius:12px;box-shadow:0 8px 0 #0003}
+.player{position:absolute;width:46px;height:46px;border-radius:50%;z-index:30;border:4px solid white;box-shadow:0 4px 12px #0009}
+.me{background:#1683ff}.enemy{background:#e53935}.botEnemy{background:#8e24aa;border-color:#ffd43b}.enemyHp{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);width:42px;height:5px;background:#300;border:1px solid #fff;border-radius:4px;overflow:hidden}.enemyHp i{display:block;height:100%;width:100%;background:#38d66b}
+.player .gun{position:absolute;width:24px;height:10px;border-radius:5px;background:#111;left:31px;top:14px;transform-origin:left center}
+.name{position:absolute;top:-23px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#fff;font-size:12px;font-weight:bold;text-shadow:0 2px 3px #000}
+.bullet{position:absolute;width:12px;height:12px;border-radius:50%;background:#ffd52e;border:2px solid #fff;z-index:25;box-shadow:0 0 10px #ffd52e}
+.chest{position:absolute;width:58px;height:48px;background:#9b5b22;border:4px solid #4d2a12;border-radius:8px;z-index:12;box-shadow:0 6px 0 #0005}
+.chest:before{content:"";position:absolute;left:-4px;right:-4px;top:15px;height:7px;background:#d99536;border:3px solid #4d2a12}
+.chest:after{content:"📦";position:absolute;left:14px;top:6px;font-size:20px}
+.chest.open{opacity:.55}
+.item{position:absolute;width:42px;height:42px;border-radius:50%;z-index:14;display:flex;align-items:center;justify-content:center;font-size:24px;background:#111d;border:3px solid #fff;animation:pulse .8s infinite alternate}
+@keyframes pulse{to{transform:scale(1.08)}}
+#hud{position:fixed;top:10px;left:10px;right:10px;display:flex;gap:8px;justify-content:space-between;z-index:100;pointer-events:none}
+.box{background:#111c;color:#fff;padding:8px 11px;border-radius:12px;font-weight:bold}
+#copyRoomBtn{margin-right:6px;border:0;border-radius:7px;padding:4px 7px;background:#2f8cff;color:#fff;font-weight:bold;font-size:11px}#onlinePanel{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:110;background:#111e;color:#fff;padding:4px 7px;border-radius:8px;font-size:11px;display:none;white-space:nowrap}
+#lobby{position:fixed;inset:0;background:#0009;z-index:500;display:flex;align-items:center;justify-content:center}
+.card{width:min(92vw,410px);background:#17221a;color:#fff;border:1px solid #ffffff22;border-radius:18px;padding:20px;box-shadow:0 15px 40px #0008}
+.card h2{margin:0 0 12px}
+.card p{font-size:13px;opacity:.85;line-height:1.6}
+.card input{width:100%;padding:12px;border:0;border-radius:10px;margin:7px 0;background:#fff;color:#111;font-size:16px}
+.card button{width:100%;padding:12px;border:0;border-radius:10px;margin-top:7px;font-weight:bold;font-size:16px}
+#hostBtn{background:#2f8cff;color:#fff}.join{background:#35b66f;color:#fff}
+#status{margin-top:10px;font-size:13px;min-height:20px}
+#move{position:fixed;left:18px;bottom:18px;z-index:200;width:180px;height:126px}
+.b{position:absolute;width:58px;height:58px;border:0;border-radius:16px;background:#ffffff2b;color:#fff;font-size:27px;font-weight:bold;touch-action:none;-webkit-user-select:none;user-select:none}
+#u{left:61px;top:0}#l{left:0;top:64px}#d{left:61px;top:64px}#r{left:122px;top:64px}
+.b.down,#shoot.down{background:#ffffff58}
+#shoot{position:fixed;right:22px;bottom:28px;z-index:200;width:92px;height:92px;border-radius:50%;border:4px solid #fff;background:#e53935;color:#fff;font-size:18px;font-weight:bold;touch-action:none}
+#loot{display:none;position:fixed;left:50%;bottom:135px;transform:translateX(-50%);z-index:210;border:0;border-radius:14px;background:#ffd43b;color:#111;padding:12px 22px;font-size:17px;font-weight:bold}
+#msg{position:fixed;top:95px;left:50%;transform:translateX(-50%);z-index:210;color:#fff;background:#111d;padding:7px 12px;border-radius:12px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="game">
+<div id="world">
+<div class="wall" data-x="180" data-y="140" data-w="280" data-h="100" style="left:180px;top:140px;width:280px;height:100px"></div>
+<div class="wall" data-x="650" data-y="120" data-w="160" data-h="240" style="left:650px;top:120px;width:160px;height:240px"></div>
+<div class="wall" data-x="1060" data-y="180" data-w="300" data-h="110" style="left:1060px;top:180px;width:300px;height:110px"></div>
+<div class="wall" data-x="350" data-y="540" data-w="190" data-h="260" style="left:350px;top:540px;width:190px;height:260px"></div>
+<div class="wall" data-x="820" data-y="500" data-w="300" data-h="140" style="left:820px;top:500px;width:300px;height:140px"></div>
+<div class="wall" data-x="1360" data-y="540" data-w="180" data-h="280" style="left:1360px;top:540px;width:180px;height:280px"></div>
+<div class="chest" data-x="260" data-y="360" style="left:260px;top:360px"></div>
+<div class="chest" data-x="920" data-y="260" style="left:920px;top:260px"></div>
+<div class="chest" data-x="610" data-y="900" style="left:610px;top:900px"></div>
+<div class="chest" data-x="1510" data-y="360" style="left:1510px;top:360px"></div>
+<div class="chest" data-x="1170" data-y="900" style="left:1170px;top:900px"></div>
+ <div id="enemies"></div>
+</div>
+</div>
+
+<div id="hud"><div class="box" id="hp">❤️ 100</div><div class="box" id="ammo">🔫 مهمات: 30</div><div class="box" id="players">👥 1</div></div>
+<div id="onlinePanel"><span id="roomIdText"></span><button id="copyRoomBtn" type="button">📋 کپی</button></div>
+<div id="msg">ابتدا اتاق آنلاین بساز یا وارد اتاق شو</div>
+
+<div id="move">
+<button class="b" id="u">▲</button><button class="b" id="l">◀</button><button class="b" id="d">▼</button><button class="b" id="r">▶</button>
+</div>
+<button id="shoot">🔴<br>تیر</button>
+<button id="loot">📦 باز کردن صندوق</button>
+
+<div id="lobby">
+<div class="card">
+<h2>🎮 Zuba Shooter Online</h2>
+<p>برای بازی بین دو دستگاه، یک نفر اتاق بسازد و ID اتاق را برای حداکثر ۵ بازیکن دیگر بفرستد.</p>
+<input id="nameInput" placeholder="اسم بازیکن" maxlength="16">
+<button id="hostBtn">ساخت اتاق</button>
+<input id="roomInput" placeholder="ID اتاق بازیکن میزبان">
+<button class="join" id="joinBtn">ورود به اتاق</button>
+<div id="status">در حال آماده‌سازی...</div>
+</div>
+</div>
+
+<script>
+const world=document.getElementById('world');
+const walls=[...document.querySelectorAll('.wall')];
+const chestEls=[...document.querySelectorAll('.chest')];
+const lobby=document.getElementById('lobby');
+const statusEl=document.getElementById('status');
+const msg=document.getElementById('msg');
+const nameInput=document.getElementById('nameInput');
+const ammoEl=document.getElementById('ammo');
+const playersEl=document.getElementById('players');
+const lootBtn=document.getElementById('loot');
+
+let px=1000,py=700,hp=100,ammo=30,aimX=1,aimY=0;
+const state={u:false,d:false,l:false,r:false};
+let peer=null,peerId='',hostId='',isHost=false,connections=new Map(),remotePlayers=new Map();
+const MAX_PLAYERS=6;
+let bullets=[],nearChest=null,lastSend=0;
+let enemies=[
+ {id:'bot1',x:500,y:330,hp:60,maxHp:60,speed:1.15},
+ {id:'bot2',x:1500,y:250,hp:60,maxHp:60,speed:1.05},
+ {id:'bot3',x:700,y:1050,hp:70,maxHp:70,speed:1.2},
+ {id:'bot4',x:1650,y:1050,hp:80,maxHp:80,speed:0.95},
+ {id:'bot5',x:1150,y:760,hp:60,maxHp:60,speed:1.3}
+];
+let enemyEls=new Map();
+
+function dist(a,b,c,d){return Math.hypot(a-c,b-d)}
+function wallHit(x,y){
+ const r=18;
+ for(const w of walls){
+  const ox=+w.dataset.x,oy=+w.dataset.y,ow=+w.dataset.w,oh=+w.dataset.h;
+  const cx=Math.max(ox,Math.min(x,ox+ow)),cy=Math.max(oy,Math.min(y,oy+oh));
+  const dx=x-cx,dy=y-cy;if(dx*dx+dy*dy<r*r)return true;
+ }
+ return false;
+}
+function move(dx,dy){
+ if(dx||dy){const n=Math.hypot(dx,dy)||1;aimX=dx/n;aimY=dy/n}
+ let nx=Math.max(24,Math.min(1976,px+dx)),ny=Math.max(24,Math.min(1376,py+dy));
+ if(!wallHit(nx,py))px=nx;if(!wallHit(px,ny))py=ny;
+}
+function updateCamera(){
+ const sx=Math.max(0,Math.min(2000-innerWidth,px-innerWidth/2)),sy=Math.max(0,Math.min(1400-innerHeight,py-innerHeight/2));
+ world.style.transform=`translate3d(${-sx}px,${-sy}px,0)`;
+ let me=document.getElementById('mePlayer'); if(!me){
+  me=document.createElement('div');me.id='mePlayer';me.className='player me';me.innerHTML='<span class="name"></span><span class="gun"></span>';world.appendChild(me)
+ }
+ me.style.left=(px-23)+'px';me.style.top=(py-23)+'px';me.querySelector('.name').textContent=nameInput.value||'Player';
+ me.querySelector('.gun').style.transform=`rotate(0rad)`;
+}
+function setMsg(t){msg.textContent=t;clearTimeout(setMsg.t);setMsg.t=setTimeout(()=>msg.textContent='',2200)}
+function updateHud(){ammoEl.textContent='🔫 مهمات: '+ammo;playersEl.textContent='👥 '+Math.min(6,1+remotePlayers.size)+'/6';document.getElementById('hp').textContent='❤️ '+hp}
+function sendAll(data){
+ for(const c of connections.values()) if(c.open)c.send(data);
+}
+function broadcastState(){
+ const packet={t:'state',id:peerId,name:nameInput.value||'Player',x:px,y:py,hp};
+ sendAll(packet);
+}
+function makeRemote(p){
+ let el=remotePlayers.get(p.id);if(!el){el=document.createElement('div');el.className='player enemy';el.innerHTML='<span class="name"></span><span class="gun"></span>';world.appendChild(el);remotePlayers.set(p.id,el)}
+ el.style.left=(p.x-23)+'px';el.style.top=(p.y-23)+'px';el.querySelector('.name').textContent=p.name||'Player';el.querySelector('.gun').style.transform='rotate(0rad)';
+}
+function removeRemote(id){const el=remotePlayers.get(id);if(el){el.remove();remotePlayers.delete(id)}updateHud()}
+function handleData(data,conn){
+ if(!data)return;
+ if(data.t==='state'){makeRemote(data);updateHud()}
+ if(data.t==='joined' && isHost){
+    broadcastState();
+    connections.forEach((c)=>{
+      if(c!==conn && c.open)c.send({t:'state',id:peerId,name:nameInput.value||'Host',x:px,y:py,hp});
+    });
+  }
+ if(data.t==='bye')removeRemote(data.id);
+ if(data.t==='shot'){spawnBullet(data.x,data.y,data.dx,data.dy,data.owner)}
+}
+function setupConn(conn){
+ connections.set(conn.peer,conn);
+ conn.on('open',()=>{conn.send({t:'joined',id:peerId});broadcastState();updateHud();setMsg('✅ بازیکن متصل شد')});
+ conn.on('data',d=>handleData(d,conn));
+ conn.on('close',()=>{removeRemote(conn.peer);connections.delete(conn.peer);updateHud()});
+ conn.on('error',()=>connections.delete(conn.peer));
+}
+function createPeer(){
+ peer=new Peer();
+ peer.on('open',id=>{peerId=id;statusEl.textContent='✅ اتاق ساخته شد. ID شما: '+id;onlinePanel.style.display='block';roomIdText.textContent='ID: '+id;lobby.style.display='none';isHost=true;setMsg('اتاق آنلاین آماده است')});
+ peer.on('connection',setupConn);
+ peer.on('error',e=>{statusEl.textContent='❌ '+e.type});
+}
+function joinPeer(id){
+ peer=new Peer();
+ peer.on('open',myId=>{
+  peerId=myId;hostId=id;isHost=false;
+  const c=peer.connect(id,{reliable:true});setupConn(c);
+  c.on('open',()=>{lobby.style.display='none';onlinePanel.style.display='block';roomIdText.textContent='ID: '+id;setMsg('✅ آنلاین شدی')});
+ });
+ peer.on('error',e=>{statusEl.textContent='❌ '+e.type});
+}
+const onlinePanel=document.getElementById('onlinePanel');
+const roomIdText=document.getElementById('roomIdText');
+const copyRoomBtn=document.getElementById('copyRoomBtn');
+
+async function copyRoomId(){
+  const id=peerId;
+  if(!id){setMsg('❌ هنوز اتاق ساخته نشده');return}
+  try{
+    await navigator.clipboard.writeText(id);
+    setMsg('✅ ID اتاق کپی شد');
+    copyRoomBtn.textContent='✅ کپی شد';
+    setTimeout(()=>copyRoomBtn.textContent='📋 کپی',1200);
+  }catch(e){
+    const ta=document.createElement('textarea');
+    ta.value=id;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');ta.remove();
+    setMsg('✅ ID اتاق کپی شد');
+  }
+}
+copyRoomBtn.onclick=copyRoomId;
+document.getElementById('hostBtn').onclick=()=>{if(!nameInput.value.trim())nameInput.value='Player';statusEl.textContent='در حال ساخت اتاق...';createPeer()};
+document.getElementById('joinBtn').onclick=()=>{const id=document.getElementById('roomInput').value.trim();if(!id){statusEl.textContent='ID اتاق را وارد کن';return}if(!nameInput.value.trim())nameInput.value='Player';statusEl.textContent='در حال اتصال...';joinPeer(id)};
+
+/* input */
+function bind(id,key){const e=document.getElementById(id),on=(ev)=>{ev.preventDefault();state[key]=true;e.classList.add('down')},off=(ev)=>{ev.preventDefault();state[key]=false;e.classList.remove('down')};
+ e.addEventListener('touchstart',on,{passive:false});e.addEventListener('touchend',off,{passive:false});e.addEventListener('touchcancel',off,{passive:false});e.addEventListener('mousedown',on);e.addEventListener('mouseup',off);e.addEventListener('mouseleave',off)}
+bind('u','u');bind('d','d');bind('l','l');bind('r','r');
+addEventListener('keydown',e=>{const k={w:'u',W:'u',ArrowUp:'u',s:'d',S:'d',ArrowDown:'d',a:'l',A:'l',ArrowLeft:'l',d:'r',D:'r',ArrowRight:'r'}[e.key];if(k){state[k]=true;e.preventDefault()}if(e.code==='Space'){e.preventDefault();fire()}});
+addEventListener('keyup',e=>{const k={w:'u',W:'u',ArrowUp:'u',s:'d',S:'d',ArrowDown:'d',a:'l',A:'l',ArrowLeft:'l',d:'r',D:'r',ArrowRight:'r'}[e.key];if(k){state[k]=false;e.preventDefault()}});
+
+
+/* دشمن‌های کامپیوتری */
+function createEnemy(e){
+  let el=enemyEls.get(e.id);
+  if(!el){
+    el=document.createElement('div');
+    el.className='player botEnemy';
+    el.innerHTML='<span class="name"></span><span class="gun"></span><span class="enemyHp"><i></i></span>';
+    world.appendChild(el);
+    enemyEls.set(e.id,el);
+  }
+  el.style.left=(e.x-23)+'px';
+  el.style.top=(e.y-23)+'px';
+  el.querySelector('.name').textContent='دشمن';
+  el.querySelector('.enemyHp i').style.width=Math.max(0,e.hp/e.maxHp*100)+'%';
+}
+
+function updateEnemies(){
+  for(const e of enemies){
+    if(e.hp<=0) continue;
+    const dx=px-e.x,dy=py-e.y,d=Math.hypot(dx,dy)||1;
+    if(d>55 && d<850){
+      const mx=dx/d*e.speed,my=dy/d*e.speed;
+      const nx=e.x+mx,ny=e.y+my;
+      if(!wallHit(nx,e.y)) e.x=nx;
+      if(!wallHit(e.x,ny)) e.y=ny;
+    }
+    createEnemy(e);
+  }
+}
+
+function damageEnemy(e,damage=35){
+  e.hp-=damage;
+  if(e.hp<=0){
+    const el=enemyEls.get(e.id);
+    if(el) el.remove();
+    enemyEls.delete(e.id);
+    setMsg('💥 دشمن کشته شد!');
+    setTimeout(()=>{
+      e.x=120+Math.random()*1760;
+      e.y=100+Math.random()*1200;
+      e.hp=e.maxHp;
+      createEnemy(e);
+    },2500);
+  }else{
+    setMsg('🎯 دشمن آسیب دید!');
+  }
+}
+
+/* shooting */
+function spawnBullet(x,y,dx,dy,owner){
+ const b=document.createElement('div');b.className='bullet';world.appendChild(b);const ob={el:b,x,y,dx,dy,owner,life:0};bullets.push(ob)
+}
+function fire(){
+ if(!peer||!peerId){setMsg('اول وارد بازی آنلاین شو');return}
+ if(ammo<=0){setMsg('❌ مهمات تمام شده');return}
+ ammo--;updateHud();
+ const x=px+aimX*32,y=py+aimY*32;
+ spawnBullet(x,y,aimX,aimY,peerId);
+ sendAll({t:'shot',x,y,dx:aimX,dy:aimY,owner:peerId});
+}
+const shoot=document.getElementById('shoot');
+function shootNow(e){e.preventDefault();shoot.classList.add('down');fire();setTimeout(()=>shoot.classList.remove('down'),110)}
+shoot.addEventListener('touchstart',shootNow,{passive:false});shoot.addEventListener('mousedown',shootNow);
+
+/* loot */
+function checkChest(){
+ nearChest=null;
+ for(const c of chestEls){if(c.classList.contains('open'))continue;const cx=+c.dataset.x+29,cy=+c.dataset.y+24;if(dist(px,py,cx,cy)<90){nearChest=c;break}}
+ lootBtn.style.display=nearChest?'block':'none';
+}
+lootBtn.onclick=()=>{
+ if(!nearChest)return;
+ nearChest.classList.add('open');lootBtn.style.display='none';
+ const item=document.createElement('div');item.className='item';
+ const roll=Math.random();item.dataset.type=roll<.75?'ammo':'med';item.textContent=item.dataset.type==='ammo'?'🔸':'💊';
+ item.style.left=(+nearChest.dataset.x+8)+'px';item.style.top=(+nearChest.dataset.y+3)+'px';item.dataset.x=+nearChest.dataset.x+29;item.dataset.y=+nearChest.dataset.y+24;world.appendChild(item);
+ setMsg('صندوق باز شد!');
+};
+function collect(){document.querySelectorAll('.item').forEach(i=>{if(dist(px,py,+i.dataset.x,+i.dataset.y)<55){if(i.dataset.type==='ammo'){ammo+=30;setMsg('🔸 ۳۰ مهمات گرفتی')}else{hp=Math.min(100,hp+25);setMsg('💊 سلامتی +25')}i.remove();updateHud()}})}
+
+/* game loop */
+function tick(){
+ let dx=(state.r?5:0)-(state.l?5:0),dy=(state.d?5:0)-(state.u?5:0);move(dx,dy);
+ const now=performance.now();if(now-lastSend>50&&peer&&peerId){lastSend=now;broadcastState()}
+ for(let i=bullets.length-1;i>=0;i--){
+    const b=bullets[i];
+    b.x+=b.dx*14;b.y+=b.dy*14;b.life+=14;
+    b.el.style.left=(b.x-6)+'px';b.el.style.top=(b.y-6)+'px';
+    let hit=false;
+    if(b.owner===peerId){
+      for(const e of enemies){
+        if(e.hp>0 && dist(b.x,b.y,e.x,e.y)<27){
+          damageEnemy(e,35);
+          hit=true;
+          break;
+        }
+      }
+    }
+    if(hit||b.life>1800||b.x<0||b.x>2000||b.y<0||b.y>1400||wallHit(b.x,b.y)){
+      b.el.remove();bullets.splice(i,1);
+    }
+  }
+ updateEnemies();checkChest();collect();updateCamera();updateHud();requestAnimationFrame(tick)
+}
+updateCamera();updateHud();tick();
+</script>
+</body>
+</html>
