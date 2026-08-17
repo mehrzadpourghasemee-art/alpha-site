@@ -10,5 +10,5 @@ document.getElementById("chatbtn").onclick = function() {
 
 const game = 
 document.getElementById("gamebtn").onclick = function() {
-    window.location.href = "zuba.html"
+    window.location.href = "zuba-3.html"
 }
